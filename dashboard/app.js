@@ -284,6 +284,22 @@ function renderPatterns(preds) {
         return;
     }
     
+    const PATTERN_GUIDE = {
+        'Doji': { desc: "Market is undecided. Buyers and sellers are equal.", action: "Wait for the next candle to confirm direction." },
+        'Hammer': { desc: "Strong rejection of lower prices.", action: "BUY if next candle opens higher. Stop-loss below tail." },
+        'Hanging Man': { desc: "Potential exhaustion in uptrend.", action: "SELL if next candle closes lower. Stop-loss above high." },
+        'Shooting Star': { desc: "Strong rejection of higher prices.", action: "SELL on next candle's open. Stop-loss above tail." },
+        'Inverted Hammer': { desc: "Buyers stepped in early during downtrend.", action: "BUY on bullish confirmation. Stop-loss below low." },
+        'Bullish Engulfing': { desc: "Bulls completely overpowered the previous day's selling.", action: "BUY. Strong momentum indicator." },
+        'Bearish Engulfing': { desc: "Bears completely overpowered the previous day's buying.", action: "SELL. Momentum has shifted downward." },
+        'Morning Star': { desc: "Classic 3-candle bottom reversal.", action: "BUY on the close. High probability reversal." },
+        'Evening Star': { desc: "Classic 3-candle top reversal.", action: "SELL on the close. High probability top." },
+        'Double Top': { desc: "Price failed to break the same high twice (M-shape).", action: "SELL when price breaks below neckline." },
+        'Double Bottom': { desc: "Price bounced off the same low twice (W-shape).", action: "BUY when price breaks above neckline." },
+        'Resistance Breakout': { desc: "Price forcefully broke through the 20-day ceiling.", action: "BUY breakout. Watch for retest of broken line." },
+        'Support Breakdown': { desc: "Price fell through the 20-day floor.", action: "SELL. Watch for retest of broken line as resistance." }
+    };
+
     grid.innerHTML = patternsFound.map(r => {
         const isBuy = r.action === 'BUY';
         const color = isBuy ? '#10b981' : (r.action === 'SELL SHORT' ? '#ef4444' : '#f59e0b');
@@ -302,12 +318,24 @@ function renderPatterns(preds) {
             </div>
             <div class="rec-reasons" style="gap:6px">
                 ${r.patterns.map(p => {
-                    const isBull = p.includes('Bullish') || p.includes('Bottom') || p.includes('Breakout');
-                    const isBear = p.includes('Bearish') || p.includes('Top') || p.includes('Breakdown');
+                    const isBull = p.includes('Bullish') || p.includes('Bottom') || p.includes('Breakout') || p.includes('Morning');
+                    const isBear = p.includes('Bearish') || p.includes('Top') || p.includes('Breakdown') || p.includes('Evening') || p.includes('Shooting');
                     const pColor = isBull ? '#10b981' : (isBear ? '#ef4444' : 'var(--text-bright)');
                     const bg = isBull ? 'rgba(16,185,129,0.1)' : (isBear ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)');
-                    const text = p.replace('Candlestick Strategy: ', '').replace('Chart Pattern Strategy: ', '');
-                    return `<div class="rec-reason" style="background:${bg};color:${pColor};border-left:2px solid ${pColor};padding:8px 10px;font-size:12px;font-weight:500">${text}</div>`;
+                    const text = p.replace('Candlestick Strategy: ', '').replace('Chart Pattern Strategy: ', '').replace(' (Bullish Reversal)', '').replace(' (Bearish Reversal)', '').replace(' formed', '');
+                    
+                    let guideHTML = '';
+                    if (PATTERN_GUIDE[text]) {
+                        guideHTML = `<div style="margin-top:5px;font-size:10px;color:var(--text-secondary);font-weight:400;line-height:1.4">
+                            <span style="color:var(--text-dim)">Interpret:</span> ${PATTERN_GUIDE[text].desc}<br>
+                            <span style="color:${isBull?'#10b981':(isBear?'#ef4444':'var(--accent-cyan)')}">Action:</span> ${PATTERN_GUIDE[text].action}
+                        </div>`;
+                    }
+                    
+                    return `<div class="rec-reason" style="background:${bg};color:${pColor};border-left:2px solid ${pColor};padding:8px 10px;font-size:12px;font-weight:500">
+                        ${text}
+                        ${guideHTML}
+                    </div>`;
                 }).join('')}
             </div>
         </div>`;

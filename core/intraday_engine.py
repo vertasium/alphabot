@@ -31,9 +31,10 @@ class IntradayEngine:
         try:
             calls = []
             
+            import yfinance as yf
             # 1. Analyze Nifty & BankNifty first for market trend
-            nifty_df = self.data_engine.get_ohlcv("^NSEI", 5, interval="5m")
-            bnifty_df = self.data_engine.get_ohlcv("^NSEBANK", 5, interval="5m")
+            nifty_df = yf.download("^NSEI", period="5d", interval="5m", progress=False)
+            bnifty_df = yf.download("^NSEBANK", period="5d", interval="5m", progress=False)
             
             nifty_trend = self._get_short_term_trend(nifty_df) if nifty_df is not None else 0
             bnifty_trend = self._get_short_term_trend(bnifty_df) if bnifty_df is not None else 0
@@ -42,7 +43,7 @@ class IntradayEngine:
             
             # 2. Scan F&O stocks
             for symbol in FO_SYMBOLS:
-                df = self.data_engine.get_ohlcv(symbol, 5, interval="5m")
+                df = yf.download(symbol, period="5d", interval="5m", progress=False)
                 if df is None or len(df) < 10:
                     continue
                     

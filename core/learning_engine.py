@@ -67,11 +67,11 @@ class LearningEngine:
             self.history[date_str] = {}
             
         for p in predictions:
-            self.history[date_str][p['symbol']] = {
-                'action': p['action'],
-                'entry': p['entry_price'],
-                'target': float(p['target_1']),
-                'stop_loss': float(p['stop_loss'])
+            self.history[date_str][p.symbol] = {
+                'action': p.action,
+                'entry': p.entry_price,
+                'target': float(p.target_1),
+                'stop_loss': float(p.stop_loss)
             }
         self.save_data()
 
