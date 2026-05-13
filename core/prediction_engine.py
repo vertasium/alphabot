@@ -231,13 +231,29 @@ class PredictionEngine:
             sell_regimes = ['bear_trend', 'high_vol', 'crash']
             regime_suitable = regime in buy_regimes
 
-            # ── 6. Composite Direction Probability ───────────
+            # ── 6. Candlestick & Chart Patterns (PDF Integration) ──
+            candlestick_patterns = features.get('candlestick_patterns', [])
+            chart_patterns = features.get('chart_patterns', [])
+            all_patterns = candlestick_patterns + chart_patterns
+            
+            bull_patterns = ['Hammer', 'Inverted Hammer', 'Morning Star', 'Bullish Engulfing', 'Double Bottom', 'Resistance Breakout']
+            bear_patterns = ['Hanging Man', 'Shooting Star', 'Evening Star', 'Bearish Engulfing', 'Double Top', 'Support Breakdown']
+            
+            pattern_score = 0.5
+            bull_count = sum(1 for p in all_patterns if p in bull_patterns)
+            bear_count = sum(1 for p in all_patterns if p in bear_patterns)
+            
+            if bull_count > bear_count: pattern_score = 0.7 + (bull_count * 0.05)
+            elif bear_count > bull_count: pattern_score = 0.3 - (bear_count * 0.05)
+
+            # ── 7. Composite Direction Probability ───────────
             # Weighted average of all signals
             weights = {
-                'tech': 0.30,
+                'tech': 0.20,
                 'agent': 0.25,
-                'news': 0.20,
+                'news': 0.15,
                 'strategy': 0.15,
+                'pattern': 0.15,
                 'regime': 0.10
             }
             regime_score = 0.6 if regime_suitable else 0.4
@@ -252,6 +268,7 @@ class PredictionEngine:
                 agent_direction * weights['agent'] +
                 ((news_score + 1) / 2) * weights['news'] +
                 strategy_score * weights['strategy'] +
+                pattern_score * weights['pattern'] +
                 regime_score * weights['regime']
             )
             composite = max(0.01, min(0.99, composite))
@@ -449,8 +466,25 @@ class PredictionEngine:
         if agent_conf > 0.6:
             reasons.append(f"AI agents consensus: {agent_dir*100:.0f}% bullish (conf={agent_conf*100:.0f}%)")
 
+        # Visual Chart Patterns (from PDF strategies)
+        candlestick_patterns = features.get('candlestick_patterns', [])
+        chart_patterns = features.get('chart_patterns', [])
+        
+        bull_patterns = ['Hammer', 'Inverted Hammer', 'Morning Star', 'Bullish Engulfing', 'Double Bottom', 'Resistance Breakout']
+        bear_patterns = ['Hanging Man', 'Shooting Star', 'Evening Star', 'Bearish Engulfing', 'Double Top', 'Support Breakdown']
+        
+        for p in candlestick_patterns:
+            if direction == "UP" and p in bull_patterns: reasons.append(f"Candlestick Strategy: {p} (Bullish Reversal)")
+            elif direction == "DOWN" and p in bear_patterns: reasons.append(f"Candlestick Strategy: {p} (Bearish Reversal)")
+            n_conf += 1  # Add pattern to strategy count
+            
+        for p in chart_patterns:
+            if direction == "UP" and p in bull_patterns: reasons.append(f"Chart Pattern Strategy: {p} formed")
+            elif direction == "DOWN" and p in bear_patterns: reasons.append(f"Chart Pattern Strategy: {p} formed")
+            n_conf += 1  # Add pattern to strategy count
+
         # Strategy confirmations
-        reasons.append(f"{n_conf} strategies confirmed from {min(n_conf,6)} clusters")
+        reasons.append(f"{n_conf} strategies/patterns confirmed from clusters")
 
         # News
         if news_label == "BULLISH":

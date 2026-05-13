@@ -95,6 +95,10 @@ class FeatureEngine:
         # Parabolic SAR (simplified)
         features['psar'] = self._parabolic_sar(closes, highs, lows)
 
+        # Candlestick & Chart Patterns (From PDF Knowledge)
+        features['candlestick_patterns'] = self._candlestick_patterns(opens, highs, lows, closes)
+        features['chart_patterns'] = self._chart_patterns(highs, lows, closes)
+
         return features
 
     def _returns(self, prices, period):
@@ -291,3 +295,42 @@ class FeatureEngine:
             ep = min(lows[-5:])
         sar = sar + af * (ep - sar)
         return float(sar)
+
+    def _candlestick_patterns(self, opens, highs, lows, closes) -> list:
+        if len(closes) < 3: return []
+        patterns = []
+        o, h, l, c = opens[-1], highs[-1], lows[-1], closes[-1]
+        body = abs(c - o)
+        upper_shadow = h - max(o, c)
+        lower_shadow = min(o, c) - l
+        candle_range = h - l
+        o1, h1, l1, c1 = opens[-2], highs[-2], lows[-2], closes[-2]
+        body1 = abs(c1 - o1)
+        o2, h2, l2, c2 = opens[-3], highs[-3], lows[-3], closes[-3]
+        body2 = abs(c2 - o2)
+
+        if body <= candle_range * 0.1 and candle_range > 0: patterns.append("Doji")
+        if lower_shadow > body * 2 and upper_shadow < body * 0.5:
+            patterns.append("Hammer" if (c > o1 and c1 < o1) else "Hanging Man")
+        if upper_shadow > body * 2 and lower_shadow < body * 0.5:
+            patterns.append("Shooting Star" if (c < o1 and c1 > o1) else "Inverted Hammer")
+        if c1 < o1 and c > o and c > o1 and o < c1: patterns.append("Bullish Engulfing")
+        if c1 > o1 and c < o and c < o1 and o > c1: patterns.append("Bearish Engulfing")
+        if c2 < o2 and body1 < body2 * 0.3 and c > o and c > (o2 + c2) / 2: patterns.append("Morning Star")
+        if c2 > o2 and body1 < body2 * 0.3 and c < o and c < (o2 + c2) / 2: patterns.append("Evening Star")
+        return patterns
+
+    def _chart_patterns(self, highs, lows, closes) -> list:
+        if len(closes) < 20: return []
+        patterns = []
+        p1_h, p2_h = np.max(highs[-20:-10]), np.max(highs[-10:])
+        if abs(p1_h - p2_h) / p1_h < 0.015 and p1_h > np.mean(closes[-20:]) * 1.05:
+            patterns.append("Double Top")
+        p1_l, p2_l = np.min(lows[-20:-10]), np.min(lows[-10:])
+        if abs(p1_l - p2_l) / p1_l < 0.015 and p1_l < np.mean(closes[-20:]) * 0.95:
+            patterns.append("Double Bottom")
+        res = np.max(highs[-20:-1])
+        if closes[-1] > res: patterns.append("Resistance Breakout")
+        sup = np.min(lows[-20:-1])
+        if closes[-1] < sup: patterns.append("Support Breakdown")
+        return patterns
