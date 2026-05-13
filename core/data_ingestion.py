@@ -176,7 +176,7 @@ class DataIngestionEngine:
         }
         for ticker, attr in indices.items():
             try:
-                df = yf.download(ticker, start=start, end=end,
+                df = yf.download(ticker, start=start.strftime('%Y-%m-%d'), end=end.strftime('%Y-%m-%d'),
                                  progress=False, auto_adjust=True)
                 if not df.empty:
                     df = _flatten_columns(df)

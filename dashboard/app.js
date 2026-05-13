@@ -47,11 +47,14 @@ function onCycleUpdate(data) {
     const m = data.market || {};
     
     // Header & Ticker
-    setText('hNifty', (m.nifty50||0).toLocaleString('en-IN'));
+    const niftyVal = m.nifty50 || lastPrices["^NSEI"] || 0;
+    if (niftyVal > 0) setText('hNifty', niftyVal.toLocaleString('en-IN'));
     setText('hNiftyChg', fmt(m.nifty_change||0, 2, '%'));
     document.getElementById('hNiftyChg').className = `ticker-chg ${m.nifty_change>=0?'positive':'negative'}`;
-    setText('hSensex', (m.sensex||0).toLocaleString('en-IN'));
-    setText('hBankNifty', (m.banknifty||0).toLocaleString('en-IN'));
+    const sensexVal = m.sensex || lastPrices["^BSESN"] || 0;
+    if (sensexVal > 0) setText('hSensex', sensexVal.toLocaleString('en-IN'));
+    const bankNiftyVal = m.banknifty || lastPrices["^NSEBANK"] || 0;
+    if (bankNiftyVal > 0) setText('hBankNifty', bankNiftyVal.toLocaleString('en-IN'));
     setText('hVix', (m.india_vix||15).toFixed(1));
     const ns = data.news_sentiment || 0;
     setText('hNewsSentiment', ns > 0.1 ? 'BULLISH' : ns < -0.1 ? 'BEARISH' : 'NEUTRAL');
@@ -78,11 +81,11 @@ function onCycleUpdate(data) {
     setText('drawdown', `Max DD: ${((p.drawdown_pct||0)*100).toFixed(2)}%`);
 
     // Market Bar
-    setText('mbNifty', (m.nifty50||0).toLocaleString('en-IN'));
+    if (niftyVal > 0) setText('mbNifty', niftyVal.toLocaleString('en-IN'));
     setText('mbNiftyChg', fmt(m.nifty_change||0, 2, '%'));
     setClass('mbNiftyChg', m.nifty_change);
-    setText('mbSensex', (m.sensex||0).toLocaleString('en-IN'));
-    setText('mbBankNifty', (m.banknifty||0).toLocaleString('en-IN'));
+    if (sensexVal > 0) setText('mbSensex', sensexVal.toLocaleString('en-IN'));
+    if (bankNiftyVal > 0) setText('mbBankNifty', bankNiftyVal.toLocaleString('en-IN'));
     setText('mbVix', (m.india_vix||15).toFixed(1));
     setText('mbRegime', reg);
     setText('mbNewsSentiment', ns>0.1?'BULLISH':ns<-0.1?'BEARISH':'NEUTRAL');
