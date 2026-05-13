@@ -55,6 +55,7 @@
         <button class="nav-tab" onclick="showTab('predictions',this)" id="tab-predictions">🔮 All Predictions</button>
         <button class="nav-tab" onclick="showTab('learning',this)" id="tab-learning" style="color:var(--accent-cyan);font-weight:bold">🧠 AI Learning</button>
         <button class="nav-tab" onclick="showTab('news',this)" id="tab-news">🗞️ News</button>
+        <button class="nav-tab" onclick="showTab('patterns',this)" id="tab-patterns">🕯️ Chart Patterns</button>
         <button class="nav-tab" onclick="showTab('outlook',this)" id="tab-outlook">📅 Outlook</button>
     </nav>
 
@@ -306,6 +307,23 @@
                 <div class="panel-header"><span class="panel-title">📅 Full Market Outlook for Tomorrow</span><span class="panel-badge" id="outlookGenTime">--</span></div>
                 <div class="panel-body" id="outlookFullBody" style="max-height:none">
                     <div style="color:var(--text-dim);text-align:center;padding:40px">Generating outlook... please wait for first prediction cycle</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: CHART PATTERNS ═══ -->
+    <div id="page-patterns" class="tab-page" style="display:none">
+        <div class="main">
+            <div class="panel section-full">
+                <div class="panel-header">
+                    <span class="panel-title">🕯️ Live Candlestick & Chart Patterns Scanner</span>
+                    <span class="panel-badge" id="patternCount">0 patterns detected</span>
+                </div>
+                <div class="panel-body" style="max-height:none">
+                    <div id="patternsGrid" class="rec-grid">
+                        <div style="color:var(--text-dim);text-align:center;padding:40px">Scanning market for chart patterns...</div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -194,6 +194,7 @@ async function fetchDataAsync() {
         renderAgents(agt);
         renderSectors(sec);
         allPredictions = pred; filterPredictions();
+        renderPatterns(pred);
         allNews = news; filterNews(currentNewsFilter);
         updateNewsStats(news);
         if(lrn) renderLearningTab(lrn);
@@ -248,6 +249,66 @@ function renderRecommendations(recs) {
             <div class="rec-reasons">
                 ${r.key_reasons.slice(0,2).map(rea => `<div class="rec-reason">${rea}</div>`).join('')}
                 ${r.risk_factors.slice(0,1).map(risk => `<div class="rec-reason rec-risk">${risk}</div>`).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderPatterns(preds) {
+    const grid = document.getElementById('patternsGrid');
+    if (!grid) return;
+    
+    // Find predictions that have pattern reasons
+    const patternsFound = [];
+    for (const p of preds) {
+        if (!p.key_reasons) continue;
+        const matched = p.key_reasons.filter(r => r.includes('Candlestick Strategy:') || r.includes('Chart Pattern Strategy:'));
+        if (matched.length > 0) {
+            patternsFound.push({
+                symbol: p.display,
+                exchange: p.exchange,
+                price: p.current_price,
+                action: p.action,
+                prob: p.direction_probability,
+                patterns: matched,
+                sector: p.sector,
+                news: p.news_sentiment
+            });
+        }
+    }
+    
+    setText('patternCount', `${patternsFound.length} patterns detected`);
+    
+    if (patternsFound.length === 0) {
+        grid.innerHTML = '<div style="padding:20px;color:var(--text-dim);grid-column:1/-1;text-align:center">No distinct chart patterns detected on the daily timeframe at this moment.</div>';
+        return;
+    }
+    
+    grid.innerHTML = patternsFound.map(r => {
+        const isBuy = r.action === 'BUY';
+        const color = isBuy ? '#10b981' : (r.action === 'SELL SHORT' ? '#ef4444' : '#f59e0b');
+        
+        return `<div class="rec-card ${isBuy ? 'buy' : 'sell'}" style="border:1px solid ${color}40">
+            <div class="rec-header" style="border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:10px;margin-bottom:10px">
+                <div>
+                    <div class="rec-symbol" style="font-size:16px">${r.symbol} <span style="font-size:10px;color:var(--text-dim);font-weight:400">${r.exchange}</span></div>
+                    <div style="font-size:11px;color:${color};font-weight:700;margin-top:4px">${r.action} (Prob: ${r.prob}%)</div>
+                </div>
+                <div class="rec-grade" style="background:transparent;color:var(--text-primary);font-size:14px;border:1px solid rgba(255,255,255,0.1)">₹${r.price}</div>
+            </div>
+            <div class="rec-meta" style="margin-bottom:10px">
+                <span class="rec-sector">${r.sector}</span>
+                <span style="font-size:9px;color:${r.news==='BULLISH'?'#10b981':r.news==='BEARISH'?'#ef4444':'var(--text-dim)'}">News: ${r.news}</span>
+            </div>
+            <div class="rec-reasons" style="gap:6px">
+                ${r.patterns.map(p => {
+                    const isBull = p.includes('Bullish') || p.includes('Bottom') || p.includes('Breakout');
+                    const isBear = p.includes('Bearish') || p.includes('Top') || p.includes('Breakdown');
+                    const pColor = isBull ? '#10b981' : (isBear ? '#ef4444' : 'var(--text-bright)');
+                    const bg = isBull ? 'rgba(16,185,129,0.1)' : (isBear ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)');
+                    const text = p.replace('Candlestick Strategy: ', '').replace('Chart Pattern Strategy: ', '');
+                    return `<div class="rec-reason" style="background:${bg};color:${pColor};border-left:2px solid ${pColor};padding:8px 10px;font-size:12px;font-weight:500">${text}</div>`;
+                }).join('')}
             </div>
         </div>`;
     }).join('');
