@@ -1,0 +1,96 @@
+/* ── NEW additions for Prediction + News UI ── */
+
+/* Nav Tabs */
+.nav-tabs{display:flex;gap:4px;padding:10px 20px 0;background:var(--bg-secondary);border-bottom:1px solid var(--border);overflow-x:auto}
+.nav-tab{padding:8px 18px;border:none;background:transparent;color:var(--text-dim);font-size:12px;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;font-family:'Inter';white-space:nowrap;border-bottom:2px solid transparent}
+.nav-tab:hover{color:var(--text-primary);background:var(--bg-card)}
+.nav-tab.active{color:var(--accent-blue);background:var(--bg-card);border-bottom-color:var(--accent-blue)}
+.tab-page{display:none}.tab-page.active{display:block}
+
+/* Outlook Banner */
+.outlook-banner{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(6,182,212,0.08));border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-lg);padding:16px 24px;animation:slideUp 0.4s both}
+.outlook-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.outlook-title{font-size:14px;font-weight:700;color:var(--text-primary)}
+.outlook-date{font-size:12px;color:var(--accent-cyan);font-family:'JetBrains Mono';font-weight:600}
+.outlook-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.outlook-item{text-align:center}
+.outlook-label{font-size:9px;text-transform:uppercase;color:var(--text-dim);font-weight:600;letter-spacing:0.5px;margin-bottom:4px}
+.outlook-val{font-size:15px;font-weight:700;font-family:'JetBrains Mono';color:var(--text-primary)}
+.outlook-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+
+/* Recommendation Cards Grid */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:4px 0}
+.rec-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:all 0.25s;position:relative;overflow:hidden}
+.rec-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px}
+.rec-card.buy::before{background:var(--accent-green)}
+.rec-card.sell::before{background:var(--accent-red)}
+.rec-card.avoid::before{background:var(--text-dim)}
+.rec-card:hover{border-color:var(--border-glow);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.rec-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.rec-symbol{font-size:16px;font-weight:800;color:var(--text-primary)}
+.rec-grade{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.rec-grade.Ap{background:rgba(16,185,129,0.2);color:#10b981;border:1px solid rgba(16,185,129,0.4)}
+.rec-grade.A{background:rgba(16,185,129,0.15);color:#10b981}
+.rec-grade.Bp{background:rgba(245,158,11,0.15);color:#f59e0b}
+.rec-grade.B{background:rgba(245,158,11,0.1);color:#f59e0b}
+.rec-grade.C{background:rgba(100,116,139,0.1);color:var(--text-dim)}
+.rec-meta{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.rec-sector{font-size:9px;color:var(--text-dim);background:rgba(255,255,255,0.04);padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.4px}
+.rec-prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.rec-price-item{text-align:center;background:rgba(0,0,0,0.2);border-radius:6px;padding:6px}
+.rec-price-label{font-size:9px;text-transform:uppercase;color:var(--text-dim);font-weight:600;letter-spacing:0.4px}
+.rec-price-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono';margin-top:2px}
+.rec-targets{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.rec-target{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:4px 10px;font-size:11px;font-family:'JetBrains Mono';color:#10b981}
+.rec-rr{font-size:11px;color:var(--accent-cyan);font-weight:600;background:rgba(6,182,212,0.1);border-radius:6px;padding:4px 10px}
+.rec-reasons{margin-top:8px}
+.rec-reason{font-size:10px;color:var(--text-dim);padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;gap:6px;align-items:flex-start}
+.rec-reason::before{content:'✓';color:var(--accent-green);flex-shrink:0;font-size:9px}
+.rec-risk::before{content:'!';color:var(--accent-red);flex-shrink:0}
+.rec-news-pill{margin-top:8px;padding:4px 8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:6px;font-size:9px;color:#a78bfa;display:flex;gap:4px;align-items:flex-start}
+.rec-dir-bar{height:3px;border-radius:2px;margin-top:6px;overflow:hidden;background:var(--bg-primary)}
+.rec-dir-fill{height:100%;border-radius:2px;transition:width 0.6s}
+
+/* News Feed */
+.news-item{padding:12px 14px;border-bottom:1px solid var(--border);transition:background 0.15s;display:flex;gap:12px;align-items:flex-start}
+.news-item:hover{background:var(--bg-card-hover)}
+.news-sentiment-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.news-sentiment-dot.bullish{background:#10b981}
+.news-sentiment-dot.bearish{background:#ef4444}
+.news-sentiment-dot.neutral{background:#64748b}
+.news-content{flex:1}
+.news-title{font-size:12px;font-weight:600;color:var(--text-primary);line-height:1.4;margin-bottom:4px}
+.news-title a{color:inherit;text-decoration:none}.news-title a:hover{color:var(--accent-blue)}
+.news-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.news-source{font-size:10px;color:var(--accent-cyan);font-weight:600}
+.news-time{font-size:10px;color:var(--text-dim)}
+.news-impact{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+.news-impact.HIGH{background:rgba(239,68,68,0.2);color:#ef4444}
+.news-impact.MEDIUM{background:rgba(245,158,11,0.2);color:#f59e0b}
+.news-impact.LOW{background:rgba(100,116,139,0.15);color:#64748b}
+.news-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.news-tag{font-size:9px;background:rgba(59,130,246,0.1);color:var(--accent-blue);padding:1px 6px;border-radius:3px}
+
+/* Search */
+.search-input{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text-primary);font-size:11px;font-family:'Inter';outline:none;width:150px}
+.search-input:focus{border-color:var(--accent-blue)}
+
+/* News badge */
+.exch-badge.news-badge{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3)}
+.btn-news{background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid rgba(139,92,246,0.3)}
+
+/* Macro/Sector lists */
+.factor-item{padding:8px 10px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-secondary);display:flex;gap:8px;align-items:flex-start}
+.factor-item.risk::before{content:'⚠';color:var(--accent-red);flex-shrink:0}
+.factor-item.macro::before{content:'📊';flex-shrink:0}
+.sector-rot-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border)}
+.sector-rot-name{font-size:11px;font-weight:600;color:var(--text-primary)}
+.sector-rot-score{font-size:12px;font-family:'JetBrains Mono';font-weight:700}
+
+/* Outlook Full Page */
+.outlook-section{margin-bottom:20px}
+.outlook-section-title{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-secondary);letter-spacing:0.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.pick-pill{display:inline-block;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;font-family:'JetBrains Mono';margin:3px}
+.avoid-pill{display:inline-block;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;font-family:'JetBrains Mono';margin:3px}
+
+@media(max-width:900px){.outlook-grid{grid-template-columns:repeat(2,1fr)}.rec-grid{grid-template-columns:1fr}}

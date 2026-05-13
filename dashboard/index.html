@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaBot v4.0 — NSE/BSE Prediction Dashboard</title>
+    <meta name="description" content="AlphaBot v4.0 AI — NSE/BSE predictions, news intelligence, tomorrow's top picks">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/extra.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">α</div>
+            <div>
+                <span class="logo-text">ALPHABOT</span>
+                <span class="logo-version">v4.0 · Prediction Engine</span>
+            </div>
+        </div>
+        <div class="market-ticker" id="marketTicker">
+            <div class="ticker-item"><span class="ticker-label">NIFTY 50</span><span class="ticker-val" id="hNifty">--</span><span class="ticker-chg" id="hNiftyChg"></span></div>
+            <div class="ticker-sep">|</div>
+            <div class="ticker-item"><span class="ticker-label">SENSEX</span><span class="ticker-val" id="hSensex">--</span></div>
+            <div class="ticker-sep">|</div>
+            <div class="ticker-item"><span class="ticker-label">BANK NIFTY</span><span class="ticker-val" id="hBankNifty">--</span></div>
+            <div class="ticker-sep">|</div>
+            <div class="ticker-item"><span class="ticker-label">INDIA VIX</span><span class="ticker-val" id="hVix">--</span></div>
+            <div class="ticker-sep">|</div>
+            <div class="ticker-item"><span class="ticker-label">NEWS SENTIMENT</span><span class="ticker-val" id="hNewsSentiment">--</span></div>
+        </div>
+        <div class="header-right">
+            <div class="exchange-badges">
+                <span class="exch-badge nse" id="nseCount">NSE: --</span>
+                <span class="exch-badge bse" id="bseCount">BSE: --</span>
+                <span class="exch-badge news-badge" id="newsCount">NEWS: --</span>
+            </div>
+            <div class="live-indicator"><div class="status-dot live" id="statusDot"></div><span id="statusText">CONNECTING...</span></div>
+            <div class="regime-badge regime-neutral" id="regimeBadge">INITIALIZING</div>
+            <div class="controls">
+                <button class="btn btn-start" onclick="startTrading()">▶ START</button>
+                <button class="btn btn-stop" onclick="stopTrading()">⏸ PAUSE</button>
+                <button class="btn btn-news" onclick="refreshNews()">🗞 NEWS</button>
+                <button class="btn btn-emergency" onclick="emergencyStop()">⛔ KILL</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAV TABS -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('dashboard',this)" id="tab-dashboard">📊 Live Dashboard</button>
+        <button class="nav-tab" onclick="showTab('tomorrow',this)" id="tab-tomorrow">🎯 Tomorrow's Picks</button>
+        <button class="nav-tab" onclick="showTab('intraday',this)" id="tab-intraday">⚡ Intraday & F&O</button>
+        <button class="nav-tab" onclick="showTab('predictions',this)" id="tab-predictions">🔮 All Predictions</button>
+        <button class="nav-tab" onclick="showTab('learning',this)" id="tab-learning" style="color:var(--accent-cyan);font-weight:bold">🧠 AI Learning</button>
+        <button class="nav-tab" onclick="showTab('news',this)" id="tab-news">🗞️ News</button>
+        <button class="nav-tab" onclick="showTab('outlook',this)" id="tab-outlook">📅 Outlook</button>
+    </nav>
+
+    <!-- ═══ TAB: LIVE DASHBOARD ═══ -->
+    <div id="page-dashboard" class="tab-page active">
+        <div class="main">
+            <!-- Stats Row -->
+            <div class="stat-card" style="animation-delay:0.05s">
+                <div class="stat-label">Portfolio Value (INR)</div>
+                <div class="stat-value neutral" id="equity">Rs. 5.00 Cr</div>
+                <div class="stat-sub" id="equityChange">+0.00%</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.1s">
+                <div class="stat-label">Daily P&L</div>
+                <div class="stat-value neutral" id="dailyPnl">Rs. 0</div>
+                <div class="stat-sub" id="totalPnl">Total: Rs. 0</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.15s">
+                <div class="stat-label">Sharpe / Win Rate</div>
+                <div class="stat-value neutral" id="sharpe">0.00</div>
+                <div class="stat-sub" id="winRate">Win Rate: 0%</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.2s">
+                <div class="stat-label">India VIX / Max DD</div>
+                <div class="stat-value neutral" id="vixValue">--</div>
+                <div class="vix-meter"><div class="vix-pointer" id="vixPointer" style="left:20%"></div></div>
+                <div class="stat-sub" id="drawdown">Max DD: 0.00%</div>
+            </div>
+            <!-- Market Bar -->
+            <div class="market-bar section-full" style="animation-delay:0.22s">
+                <div class="market-bar-item"><div class="mb-label">Nifty 50</div><div class="mb-val" id="mbNifty">--</div><div class="mb-chg" id="mbNiftyChg">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Sensex</div><div class="mb-val" id="mbSensex">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Bank Nifty</div><div class="mb-val" id="mbBankNifty">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">India VIX</div><div class="mb-val" id="mbVix">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Regime</div><div class="mb-val" id="mbRegime">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">News Sent.</div><div class="mb-val" id="mbNewsSentiment">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Signals</div><div class="mb-val" id="mbSignals">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Predictions</div><div class="mb-val" id="mbPredictions">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Positions</div><div class="mb-val" id="mbPositions">--</div></div>
+                <div class="market-bar-item"><div class="mb-label">Cycle</div><div class="mb-val" id="mbCycle">--</div></div>
+            </div>
+            <!-- Equity Chart + Agents -->
+            <div class="panel section-half" style="animation-delay:0.3s">
+                <div class="panel-header"><span class="panel-title">📈 Portfolio Equity Curve (INR)</span><span class="panel-badge" id="tradeCount">0 trades</span></div>
+                <div class="panel-body" style="padding:8px 12px"><div class="chart-container"><canvas id="equityChart" class="chart-canvas"></canvas></div></div>
+            </div>
+            <div class="panel section-half" style="animation-delay:0.35s">
+                <div class="panel-header"><span class="panel-title">🤖 AI Agents (8)</span><span class="panel-badge agent-consensus" id="agentConsensus">HOLD</span></div>
+                <div class="panel-body"><div class="agent-grid" id="agentGrid"><div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px">Waiting...</div></div></div>
+            </div>
+            <!-- NSE Rankings + Sectors -->
+            <div class="panel section-half" style="animation-delay:0.4s">
+                <div class="panel-header">
+                    <span class="panel-title">🏅 NSE/BSE AI Rankings</span>
+                    <div style="display:flex;gap:6px"><button class="tab-btn active" onclick="switchRankTab('nse',this)">NSE</button><button class="tab-btn" onclick="switchRankTab('bse',this)">BSE</button><button class="tab-btn" onclick="switchRankTab('all',this)">ALL</button></div>
+                </div>
+                <div class="panel-body">
+                    <table class="data-table"><thead><tr><th>#</th><th>Stock</th><th>Exch</th><th>Score</th><th>Signal</th><th>Price</th><th>1D%</th><th>RSI</th><th>Sector</th></tr></thead>
+                    <tbody id="rankingBody"><tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:16px">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+            <div class="panel section-half" style="animation-delay:0.45s">
+                <div class="panel-header"><span class="panel-title">🗂️ Sector Overview</span><span class="panel-badge" id="sectorCount">0 sectors</span></div>
+                <div class="panel-body"><div class="sector-grid" id="sectorGrid"></div></div>
+            </div>
+            <!-- Positions + Signals -->
+            <div class="panel section-half" style="animation-delay:0.5s">
+                <div class="panel-header"><span class="panel-title">💼 Open Positions</span><span class="panel-badge" id="posCount">0</span></div>
+                <div class="panel-body">
+                    <table class="data-table"><thead><tr><th>Stock</th><th>Exch</th><th>Dir</th><th>Entry</th><th>LTP</th><th>P&L</th><th>Strategy</th></tr></thead>
+                    <tbody id="positionsBody"><tr><td colspan="7" style="text-align:center;color:var(--text-dim)">No positions</td></tr></tbody></table>
+                </div>
+            </div>
+            <div class="panel section-half" style="animation-delay:0.55s">
+                <div class="panel-header"><span class="panel-title">📋 Trade History</span><span class="panel-badge" id="historyCount">0</span></div>
+                <div class="panel-body">
+                    <table class="data-table"><thead><tr><th>Stock</th><th>Dir</th><th>P&L</th><th>%</th><th>Strategy</th><th>Exit</th></tr></thead>
+                    <tbody id="tradesBody"><tr><td colspan="6" style="text-align:center;color:var(--text-dim)">No trades</td></tr></tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: TOMORROW'S PICKS ═══ -->
+    <div id="page-tomorrow" class="tab-page" style="display:none">
+        <div class="main">
+            <!-- Outlook Banner -->
+            <div class="outlook-banner section-full" id="outlookBanner">
+                <div class="outlook-header">
+                    <div class="outlook-title">📅 Tomorrow's Market Outlook</div>
+                    <div class="outlook-date" id="outlookDate">--</div>
+                </div>
+                <div class="outlook-grid">
+                    <div class="outlook-item">
+                        <div class="outlook-label">Nifty Direction</div>
+                        <div class="outlook-val" id="outlookNiftyDir">--</div>
+                        <div class="outlook-sub" id="outlookNiftyProb">--</div>
+                    </div>
+                    <div class="outlook-item">
+                        <div class="outlook-label">Nifty Range</div>
+                        <div class="outlook-val" id="outlookRange">--</div>
+                    </div>
+                    <div class="outlook-item">
+                        <div class="outlook-label">Market Sentiment</div>
+                        <div class="outlook-val" id="outlookSentiment">--</div>
+                    </div>
+                    <div class="outlook-item">
+                        <div class="outlook-label">India VIX Outlook</div>
+                        <div class="outlook-val" id="outlookVix">--</div>
+                    </div>
+                    <div class="outlook-item">
+                        <div class="outlook-label">Regime</div>
+                        <div class="outlook-val" id="outlookRegime">--</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Top Recommendations -->
+            <div class="panel section-full" style="animation-delay:0.2s">
+                <div class="panel-header">
+                    <span class="panel-title">🎯 Tomorrow's Top Stock Picks (AI-Graded)</span>
+                    <div style="display:flex;gap:6px">
+                        <button class="tab-btn active" onclick="filterRecs('all',this)">ALL</button>
+                        <button class="tab-btn" onclick="filterRecs('BUY',this)">BUY</button>
+                        <button class="tab-btn" onclick="filterRecs('SELL',this)">SELL</button>
+                        <button class="tab-btn" onclick="filterRecs('A',this)">Grade A+/A</button>
+                    </div>
+                </div>
+                <div class="panel-body" style="max-height:none">
+                    <div id="recommendationsGrid" class="rec-grid">
+                        <div style="color:var(--text-dim);text-align:center;padding:40px">Generating predictions... please wait for first cycle</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Macro Factors + Sector Rotation -->
+            <div class="panel section-half" style="animation-delay:0.3s">
+                <div class="panel-header"><span class="panel-title">🌐 Macro Factors & Key Risks</span></div>
+                <div class="panel-body"><div id="macroFactors"></div></div>
+            </div>
+            <div class="panel section-half" style="animation-delay:0.35s">
+                <div class="panel-header"><span class="panel-title">🔄 Sector Rotation Tomorrow</span></div>
+                <div class="panel-body"><div id="sectorRotation"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: INTRADAY & F&O ═══ -->
+    <div id="page-intraday" class="tab-page" style="display:none">
+        <div class="main">
+            <div class="panel section-full">
+                <div class="panel-header">
+                    <span class="panel-title">⚡ Live Intraday & Options Calls (5m VWAP)</span>
+                    <span class="panel-badge" id="intradayCount">0 active calls</span>
+                </div>
+                <div class="panel-body" style="max-height:none">
+                    <div id="intradayGrid" class="rec-grid">
+                        <div style="color:var(--text-dim);text-align:center;padding:40px">Scanning 5m timeframes for VWAP bursts...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel section-full" style="animation-delay:0.2s">
+                <div class="panel-header"><span class="panel-title">🏢 Screener.in Fundamentals Lookup</span></div>
+                <div class="panel-body">
+                    <div style="display:flex;gap:10px;margin-bottom:15px">
+                        <input type="text" id="screenerSearch" placeholder="Enter NSE symbol (e.g. RELIANCE)" class="search-input" style="width:250px">
+                        <button class="btn btn-start" onclick="searchScreener()">🔍 Search</button>
+                    </div>
+                    <div id="screenerResult" style="color:var(--text-dim)">Search a symbol to see live screener.in data (PE, ROCE, ROE...)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: ALL PREDICTIONS ═══ -->
+    <div id="page-predictions" class="tab-page" style="display:none">
+        <div class="main">
+            <div class="panel section-full">
+                <div class="panel-header">
+                    <span class="panel-title">🔮 Next-Day Predictions — All Stocks</span>
+                    <div style="display:flex;gap:6px;align-items:center">
+                        <input type="text" id="predSearch" placeholder="Search stock..." class="search-input" oninput="filterPredictions()">
+                        <span class="panel-badge" id="predCount">0 predictions</span>
+                    </div>
+                </div>
+                <div class="panel-body" style="max-height:none">
+                    <table class="data-table" id="predictionsTable">
+                        <thead><tr>
+                            <th>Stock</th><th>Exch</th><th>Price</th>
+                            <th>Direction</th><th>Prob%</th><th>Grade</th>
+                            <th>Action</th><th>Entry</th><th>SL</th>
+                            <th>T1</th><th>T2</th><th>R:R</th>
+                            <th>News</th><th>Conf.</th><th>Sector</th>
+                        </tr></thead>
+                        <tbody id="predictionsBody"><tr><td colspan="15" style="text-align:center;color:var(--text-dim);padding:20px">Loading predictions...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: NEWS INTELLIGENCE ═══ -->
+    <div id="page-news" class="tab-page" style="display:none">
+        <div class="main">
+            <!-- Sentiment Summary -->
+            <div class="stat-card" style="animation-delay:0.05s">
+                <div class="stat-label">Market News Sentiment</div>
+                <div class="stat-value neutral" id="newsSentScore">Neutral</div>
+                <div class="stat-sub" id="newsSentDetail">0 articles</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.1s">
+                <div class="stat-label">High Impact News</div>
+                <div class="stat-value neutral" id="newsHighImpact">0</div>
+                <div class="stat-sub">Market-moving events</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.15s">
+                <div class="stat-label">Macro News</div>
+                <div class="stat-value neutral" id="newsMacroCount">0</div>
+                <div class="stat-sub">RBI, SEBI, FII, GDP etc.</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.2s">
+                <div class="stat-label">Sources Active</div>
+                <div class="stat-value neutral" id="newsSourceCount">0</div>
+                <div class="stat-sub" id="newsLastUpdate">Last: --</div>
+            </div>
+            <!-- News Feed -->
+            <div class="panel section-full" style="animation-delay:0.25s">
+                <div class="panel-header">
+                    <span class="panel-title">🗞️ Live News Feed (6 Sources)</span>
+                    <div style="display:flex;gap:6px">
+                        <button class="tab-btn active" onclick="filterNews('all',this)">ALL</button>
+                        <button class="tab-btn" onclick="filterNews('HIGH',this)">HIGH IMPACT</button>
+                        <button class="tab-btn" onclick="filterNews('BULLISH',this)">BULLISH</button>
+                        <button class="tab-btn" onclick="filterNews('BEARISH',this)">BEARISH</button>
+                        <button class="tab-btn" onclick="filterNews('MACRO',this)">MACRO</button>
+                        <button class="btn btn-news" onclick="refreshNews()" style="margin-left:8px">↻ Refresh</button>
+                    </div>
+                </div>
+                <div class="panel-body" style="max-height:none" id="newsFeed">
+                    <div style="color:var(--text-dim);text-align:center;padding:30px">Fetching news from Economic Times, Moneycontrol, Business Standard...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: MARKET OUTLOOK ═══ -->
+    <div id="page-outlook" class="tab-page" style="display:none">
+        <div class="main">
+            <div class="panel section-full" style="animation-delay:0.1s">
+                <div class="panel-header"><span class="panel-title">📅 Full Market Outlook for Tomorrow</span><span class="panel-badge" id="outlookGenTime">--</span></div>
+                <div class="panel-body" id="outlookFullBody" style="max-height:none">
+                    <div style="color:var(--text-dim);text-align:center;padding:40px">Generating outlook... please wait for first prediction cycle</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: AI LEARNING & ACCURACY ═══ -->
+    <div id="page-learning" class="tab-page" style="display:none">
+        <div class="main">
+            <!-- Accuracy Stats -->
+            <div class="stat-card" style="animation-delay:0.05s">
+                <div class="stat-label">AI Overall Accuracy</div>
+                <div class="stat-value" id="lrnOverallAcc" style="color:var(--accent-cyan)">0.0%</div>
+                <div class="stat-sub" id="lrnTotalPreds">Total Predictions: 0</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.1s">
+                <div class="stat-label">Successful Calls (Hits)</div>
+                <div class="stat-value positive" id="lrnHits">0</div>
+                <div class="stat-sub">Targets Reached</div>
+            </div>
+            <div class="stat-card" style="animation-delay:0.15s">
+                <div class="stat-label">Failed Calls (Misses)</div>
+                <div class="stat-value negative" id="lrnMisses">0</div>
+                <div class="stat-sub">Stop Loss Hit</div>
+            </div>
+            
+            <!-- Self-Correction Insights -->
+            <div class="panel section-full" style="animation-delay:0.2s">
+                <div class="panel-header"><span class="panel-title">🧠 AI Self-Correction & Insights</span></div>
+                <div class="panel-body">
+                    <ul id="lrnInsights" style="color:var(--text-bright);line-height:1.6;margin-left:20px;padding:10px">
+                        <li style="color:var(--text-dim)">Analyzing recent cycles...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Per-Symbol Accuracy -->
+            <div class="panel section-full" style="animation-delay:0.3s">
+                <div class="panel-header"><span class="panel-title">🎯 Per-Symbol Performance (Top 15)</span></div>
+                <div class="panel-body">
+                    <table class="data-table">
+                        <thead><tr><th>Stock Symbol</th><th>Accuracy %</th><th>Total Calls</th><th>Hits</th><th>Misses</th><th>AI Action Taken</th></tr></thead>
+                        <tbody id="lrnSymbolsBody">
+                            <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px">No historical data found. AI will populate this after 24 hours of trading.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
